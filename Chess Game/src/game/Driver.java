@@ -1,5 +1,10 @@
 package game;
 
-public class Driver {
+import javafx.application.Application;
 
-}
+public class Driver {
+	public static void main(String[] args) {
+		
+		Application.launch(Game.class, args);
+	} //main
+} //class
