@@ -7,30 +7,52 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
-
+/**
+ * The game class represents an instance of the Chess game.
+ * This class is used as the main class of the Chess game. 
+ * 
+ * 
+ * @author nicho
+ *
+ */
 public class Game extends Application {
 	
 	
-	Scene lobbyScene;
-	Scene gameScene;
+	private Scene lobbyScene;
+	private Scene gameScene;
+	private Space[][] board = new Space[8][8];
 	
+	/**
+	 * Start method of the Game Application.
+	 * This method calls methods that create the game,
+	 * and runs the game throughout the play through. 
+	 */
 	@Override
 	public void start(Stage stage) {
-		
-		
-		
-		
+	
 		
 		lobbyScene = makeLobby(stage);
 	    gameScene = makeGame(stage);
 		
-		
+	    //makes game board
+	    makeBoard();
+		printBoard();
+
 		
 		stage.setTitle("Chess v1.0");
 		stage.setScene(lobbyScene);
 		stage.show();
 		
 	} //start
+	
+	private void printBoard() {
+	    for (int i = 0; i < 8; i++) {
+	    	for (int j = 0; j < 8; j++) {
+	    		System.out.print(board[i][j].isWhite() + "\t");
+	    	} //j
+	    	System.out.println();
+	    } //i
+	}
 	
 	/**
 	 * Helper method used to create lobby for game.
@@ -80,6 +102,49 @@ public class Game extends Application {
 	} //makeGame
 	
 	
+	public void makeBoard() {
+		//instantiates the board with spaces
+		for (int row = 0; row < 8; row++) {
+			for (int col = 0; col < 8; col++) {
+				board[row][col] = new Space();
+				if (row % 2 == 0 && col % 2 == 0) {
+					board[row][col].setWhite(false);
+				} else if (row % 2 == 1 && col % 2 == 0){
+					board[row][col].setWhite(true);
+				}
+			} //col
+		} //row
+		
+		//makes 2-d array representing board
+		//loops column by column instantiating pieces of board
+		
+		for (int col = 0; col < 8; col++) {
+			for (int row = 0; row < 8; row++) {
+				
+				//instantiates pieces column by column
+				if (col == 0 && row == 0 || row == 7) {
+					if (row == 0) {
+						board[row][col].setPiece(new King("Rook", 7, true));
+						board[row][col].getPiece().setPos(row,  col);
+					} else {
+						board[row][col].setPiece(new King("Rook", 7, false));
+						board[row][col].getPiece().setPos(row,  col);
+					} //else
+					
+				} //Rook
+				
+				if (row == 1 || row == 6) {
+					if (row == 1) {
+						board[row][col].setPiece(new King("Pawn", 1, true));
+					} else {
+						board[row][col].setPiece(new King("Pawn", 1, false));
+					} //else
+				} //Pawns
+				
+			} //row
+		} //col
+		
+	} //makeBoard
 	
 	
 } //class
