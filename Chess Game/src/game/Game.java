@@ -12,7 +12,7 @@ import javafx.scene.text.Text;
  * This class is used as the main class of the Chess game. 
  * 
  * 
- * @author nicho
+ * @author Nicky Akin
  *
  */
 public class Game extends Application {
@@ -45,10 +45,18 @@ public class Game extends Application {
 		
 	} //start
 	
+	/**
+	 * Helper method to print the board.
+	 * Used for a visual check of the board array.
+	 */
 	private void printBoard() {
 	    for (int i = 0; i < 8; i++) {
 	    	for (int j = 0; j < 8; j++) {
-	    		System.out.print(board[i][j].isWhite() + "\t");
+	    		if (board[i][j].getPiece() != null) {
+	    			System.out.print(board[i][j].getPiece().getName() + "\t");
+	    		} else {
+	    		System.out.print(board[i][j].getPiece() + "\t");
+	    		}
 	    	} //j
 	    	System.out.println();
 	    } //i
@@ -88,7 +96,7 @@ public class Game extends Application {
 	 * @param stage - Main stage of the application. Taken in to have the lobby scene applied.
 	 * @return gameScene - Scene representing the main game area. 
 	 */
-	public Scene makeGame(Stage stage) {
+	private Scene makeGame(Stage stage) {
 		//text representing the color of who's turn
 		Text turn = new Text("Turn: White");
 		
@@ -101,50 +109,41 @@ public class Game extends Application {
 		
 	} //makeGame
 	
-	
-	public void makeBoard() {
+	/**
+	 * Creates a 2-d array of spaces representing the board.
+	 * Shades the array black and white to checker the board.
+	 */
+	private void makeBoard() {
 		//instantiates the board with spaces
 		for (int row = 0; row < 8; row++) {
 			for (int col = 0; col < 8; col++) {
+				
+				//creaets the space
 				board[row][col] = new Space();
+				
+				//colors space in checkerboard pattern
 				if (row % 2 == 0 && col % 2 == 0) {
-					board[row][col].setWhite(false);
-				} else if (row % 2 == 1 && col % 2 == 0){
 					board[row][col].setWhite(true);
-				}
+				} else if (row % 2 == 1 && col % 2 == 1){
+					board[row][col].setWhite(true);
+				} //else
+				
 			} //col
 		} //row
 		
-		//makes 2-d array representing board
-		//loops column by column instantiating pieces of board
-		
-		for (int col = 0; col < 8; col++) {
-			for (int row = 0; row < 8; row++) {
-				
-				//instantiates pieces column by column
-				if (col == 0 && row == 0 || row == 7) {
-					if (row == 0) {
-						board[row][col].setPiece(new King("Rook", 7, true));
-						board[row][col].getPiece().setPos(row,  col);
-					} else {
-						board[row][col].setPiece(new King("Rook", 7, false));
-						board[row][col].getPiece().setPos(row,  col);
-					} //else
-					
-				} //Rook
-				
-				if (row == 1 || row == 6) {
-					if (row == 1) {
-						board[row][col].setPiece(new King("Pawn", 1, true));
-					} else {
-						board[row][col].setPiece(new King("Pawn", 1, false));
-					} //else
-				} //Pawns
-				
-			} //row
-		} //col
+		//Puts pieces on the correct spaces
+		genPieces();
 		
 	} //makeBoard
+	
+	/** 
+	 * This method is a helper method to the {@code makeBoard()} method.
+	 * This method puts the pieces on the correct spaces column by column. 
+	 */
+	private void genPieces() {
+		Board boardGen = new Board(board);
+		board = boardGen.genBoard();
+	} //genPieces
 	
 	
 } //class
