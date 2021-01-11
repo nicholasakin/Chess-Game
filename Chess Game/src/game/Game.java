@@ -1,6 +1,5 @@
 package game;
 
-import java.io.*;
 
 
 
@@ -12,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import javafx.scene.image.*;
 
 /**
@@ -28,11 +26,14 @@ public class Game extends Application {
 	
 	private Scene lobbyScene;
 	private Scene gameScene;
-	private Space[][] boardArr = new Space[8][8];
+	private static Space[][] boardArray = new Space[8][8];
 	private ImageView[][] boardView = new ImageView[8][8];
-	private TilePane boardBg = new TilePane(Orientation.HORIZONTAL);
 	private TilePane board = new TilePane(Orientation.HORIZONTAL);
-	private int[] clicks = new int[4];
+	
+	private static Rectangle[][] bgArray = new Rectangle[8][8];
+	private TilePane boardBg = new TilePane(Orientation.HORIZONTAL);
+	
+	private static int[] clicks = new int[4];
 	
 	
 	
@@ -55,9 +56,12 @@ public class Game extends Application {
 
 		
 		stage.setTitle("Chess v1.0");
-		stage.setMinWidth(480);
+		stage.sizeToScene();
 		stage.setScene(lobbyScene);
+		stage.setResizable(true);
 		stage.show();
+
+		
 		
 	} //start
 	
@@ -68,15 +72,16 @@ public class Game extends Application {
 	private void printBoard() {
 	    for (int i = 0; i < 8; i++) {
 	    	for (int j = 0; j < 8; j++) {
-	    		if (boardArr[i][j].getPiece() != null) {
-	    			System.out.print(boardArr[i][j].getPiece().getName() + "\t");
+	    		if (boardArray[i][j].getPiece() != null) {
+	    			System.out.print(boardArray[i][j].getPiece().getName() + "\t");
 	    		} else {
-	    		System.out.print(boardArr[i][j].getPiece() + "\t");
+	    		System.out.print(boardArray[i][j].getPiece() + "\t");
 	    		}
 	    	} //j
 	    	System.out.println();
 	    } //i
-	}
+	    
+	} //print Board
 	
 	/**
 	 * Helper method used to create lobby for game.
@@ -112,10 +117,10 @@ public class Game extends Application {
 	 * @return gameScene - Scene representing the main game area. 
 	 */
 	private Scene makeGame(Stage stage) {
-		resetClicks();
+		//resetClicks();
 		
 		//text representing the color of who's turn
-		Text turn = new Text("Turn: White");
+		//Text turn = new Text("Turn: White");
 		
 		Button button = new Button("Test");
 		button.setOnAction(e -> {
@@ -123,9 +128,9 @@ public class Game extends Application {
 			ImageView temp = boardView[0][1];
 			boardView[0][1] = boardView[0][0];
 			boardView[0][0] = temp;
-			Piece tempP = boardArr[0][1].getPiece();
-			boardArr[0][1].setPiece(boardArr[0][0].getPiece());
-			boardArr[0][0].setPiece(tempP); 
+			Piece tempP = boardArray[0][1].getPiece();
+			boardArray[0][1].setPiece(boardArray[0][0].getPiece());
+			boardArray[0][0].setPiece(tempP); 
 			
 			printBoard();
 		});
@@ -150,13 +155,13 @@ public class Game extends Application {
 			for (int col = 0; col < 8; col++) {
 				
 				//creaets the space
-				boardArr[row][col] = new Space();
+				boardArray[row][col] = new Space();
 				
 				//colors space in checkerboard pattern
 				if (row % 2 == 0 && col % 2 == 0) {
-					boardArr[row][col].setWhite(true);
+					boardArray[row][col].setWhite(true);
 				} else if (row % 2 == 1 && col % 2 == 1){
-					boardArr[row][col].setWhite(true);
+					boardArray[row][col].setWhite(true);
 				} //else
 				
 			} //col
@@ -178,64 +183,110 @@ public class Game extends Application {
 	 * This method puts the pieces on the correct spaces column by column. 
 	 */
 	private void genPieces() {
-		Board boardGen = new Board(boardArr);
-		boardArr = boardGen.genBoard();
+		Board boardGen = new Board(boardArray);
+		boardArray = boardGen.genBoard();
 		boardView = boardGen.getBoardView();
 	} //genPieces
 	
+	/**
+	 * Sets up click functionality to Pieces.
+	 * Uses a mouse click listener to set action of click.
+	 */
 	public void setUpClicks() {
 		boardView = ProcessClicks.setUpClicks(boardView);
+		clicks[0] = -1;
+		clicks[1] = -1;
+		clicks[2] = -1;
+		clicks[3] = -1;
 	} //setUpClicks
 	
-	public void checkClicks(int x, int y) {
+	/**
+	 * Checks clicks to see if two were made; thus, a move needs to be processed
+	 * @param x - row of click.
+	 * @param y - column of click
+	 */
+	public static void checkClicks(int x, int y) {
 		//fills clicks array with coordinate of first/second click if empty
 		//if first and second click have been inputted, move is processed
 		System.out.println("CLicked: " + x + ", " + y);
 		if (clicks[0] == -1 && clicks[1] == -1) {
 			clicks[0] = x;
 			clicks[1] = y;
-		} else if (clicks[2] != -1 && clicks[3] != -1) {
+			bgArray[x][y].setFill(Color.YELLOW);
+		} else if (clicks[2] == -1 && clicks[3] == -1) {
 			clicks[2] = x;
 			clicks[3] = y;
-		} else {
+			bgArray[x][y].setFill(Color.YELLOW);
 			processMove();
+			
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			resetClicks();
+			
 		} //else
 		
 	} //checkCLicks
 	
-	public void resetClicks() {
+	/**
+	 * Resets click array to empty.
+	 * Changes background color of clicked tile to default value.
+	 */
+	public static void resetClicks() {
+		//resets background tile to original color
+		if (boardArray[clicks[0]][clicks[1]].isWhite()) {
+			bgArray[clicks[0]][clicks[1]].setFill(Color.WHITE);
+		} else {
+			bgArray[clicks[0]][clicks[1]].setFill(Color.SLATEGRAY);
+		}  //else
+		if (boardArray[clicks[2]][clicks[3]].isWhite()) {
+			bgArray[clicks[2]][clicks[3]].setFill(Color.WHITE);
+		} else {
+			bgArray[clicks[2]][clicks[3]].setFill(Color.SLATEGRAY);
+		} //else
+		
+		//resets clicks array
 		clicks[0] = -1;
 		clicks[1] = -1;
 		clicks[2] = -1;
 		clicks[3] = -1;
 	} //resetClicks
 	
-	public void processMove() {
-		
-		
+	public static void processMove() {
+//		boardArray[clicks[0]][clicks[1]]
+//		boardArray[clicks[2]][clicks[3]]
+
+
 	} //processMove
+
 	
 	private void genBoard() {
-		
+		int width = 480; //491, 480
 		//tilePane
-		board.setMaxWidth(480);
-		board.setMinWidth(480);
-		Rectangle[][] bg = new Rectangle[8][8];
+		board.setMaxWidth(width);
+		board.setMinWidth(width);
+		boardBg.setMaxWidth(width);
+		boardBg.setMinWidth(width);
+
 		for(int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (boardView[i][j] != null) {
 					board.getChildren().addAll(boardView[i][j]);
 				}  //if
 				
-				if (boardArr[i][j].isWhite()) { //Board color white/black
-					bg[i][j] = new Rectangle(60, 60);
-					bg[i][j].setFill(Color.WHITE);
-					boardBg.getChildren().add(bg[i][j]);
+				if (boardArray[i][j].isWhite()) { //Board color white/black
+					bgArray[i][j] = new Rectangle(60, 60);
+					bgArray[i][j].setFill(Color.WHITE);
+					//bgArray[i][j].setStroke(Color.GRAY);
+					boardBg.getChildren().add(bgArray[i][j]);
 				} else {
-					bg[i][j] = new Rectangle(60, 60);
-					bg[i][j].setFill(Color.SLATEGRAY);
-					boardBg.getChildren().add(bg[i][j]);
+					bgArray[i][j] = new Rectangle(60, 60);
+					bgArray[i][j].setFill(Color.SLATEGRAY);
+					//bgArray[i][j].setStroke(Color.GRAY);
+					boardBg.getChildren().add(bgArray[i][j]);
 				} //if				
 			} //j
 		} //i

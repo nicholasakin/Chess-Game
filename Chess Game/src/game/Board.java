@@ -145,9 +145,13 @@ public class Board {
 		// fills spots in image view with empty ImageViews
 		for (int row = 2; row < 6; row++) {
 			for (int col = 0; col < 8; col++) {
+				board[row][col].setPiece(new Blank("Blank", 0, true));
+				board[row][col].getPiece().setPos(row, col);
 				//creates a transparent image
 				try {
-					ImageView iv = new ImageView(new Image(new FileInputStream("C:util\\white_pawn.png")));
+					ImageView iv = new ImageView(
+							new Image(
+									new FileInputStream("C:util\\blank.png"), 80, 80, false, false));
 					iv.setOpacity(0.0);
 					iv.setFitHeight(60);
 					iv.setFitWidth(60);
