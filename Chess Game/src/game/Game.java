@@ -1,11 +1,19 @@
 package game;
 
+import java.io.*;
+
+
+
 import javafx.application.Application;
+import javafx.geometry.Orientation;
 import javafx.stage.Stage;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.image.*;
 
 /**
  * The game class represents an instance of the Chess game.
@@ -20,7 +28,13 @@ public class Game extends Application {
 	
 	private Scene lobbyScene;
 	private Scene gameScene;
-	private Space[][] board = new Space[8][8];
+	private Space[][] boardArr = new Space[8][8];
+	private ImageView[][] boardView = new ImageView[8][8];
+	private TilePane boardBg = new TilePane(Orientation.HORIZONTAL);
+	private TilePane board = new TilePane(Orientation.HORIZONTAL);
+	private int[] clicks = new int[4];
+	
+	
 	
 	/**
 	 * Start method of the Game Application.
@@ -32,14 +46,16 @@ public class Game extends Application {
 	
 		
 		lobbyScene = makeLobby(stage);
-	    gameScene = makeGame(stage);
+	   
 		
 	    //makes game board
 	    makeBoard();
+	    gameScene = makeGame(stage);
 		printBoard();
 
 		
 		stage.setTitle("Chess v1.0");
+		stage.setMinWidth(480);
 		stage.setScene(lobbyScene);
 		stage.show();
 		
@@ -52,10 +68,10 @@ public class Game extends Application {
 	private void printBoard() {
 	    for (int i = 0; i < 8; i++) {
 	    	for (int j = 0; j < 8; j++) {
-	    		if (board[i][j].getPiece() != null) {
-	    			System.out.print(board[i][j].getPiece().getName() + "\t");
+	    		if (boardArr[i][j].getPiece() != null) {
+	    			System.out.print(boardArr[i][j].getPiece().getName() + "\t");
 	    		} else {
-	    		System.out.print(board[i][j].getPiece() + "\t");
+	    		System.out.print(boardArr[i][j].getPiece() + "\t");
 	    		}
 	    	} //j
 	    	System.out.println();
@@ -75,7 +91,6 @@ public class Game extends Application {
 		
 		//buttons action to set the scene of the main stage
 		play.setOnAction(e -> {
-			System.out.println("Switching scene");
 			stage.setScene(gameScene);
 		});
 		
@@ -97,11 +112,27 @@ public class Game extends Application {
 	 * @return gameScene - Scene representing the main game area. 
 	 */
 	private Scene makeGame(Stage stage) {
+		resetClicks();
+		
 		//text representing the color of who's turn
 		Text turn = new Text("Turn: White");
 		
+		Button button = new Button("Test");
+		button.setOnAction(e -> {
+			System.out.println("Switching");
+			ImageView temp = boardView[0][1];
+			boardView[0][1] = boardView[0][0];
+			boardView[0][0] = temp;
+			Piece tempP = boardArr[0][1].getPiece();
+			boardArr[0][1].setPiece(boardArr[0][0].getPiece());
+			boardArr[0][0].setPiece(tempP); 
+			
+			printBoard();
+		});
+		
 		//main container in game scene
-		VBox root = new VBox(turn);
+		StackPane root = new StackPane();
+		root.getChildren().addAll(boardBg, board);
 		Scene gameScene = new Scene(root);
 		
 		//scene is returned 
@@ -119,13 +150,13 @@ public class Game extends Application {
 			for (int col = 0; col < 8; col++) {
 				
 				//creaets the space
-				board[row][col] = new Space();
+				boardArr[row][col] = new Space();
 				
 				//colors space in checkerboard pattern
 				if (row % 2 == 0 && col % 2 == 0) {
-					board[row][col].setWhite(true);
+					boardArr[row][col].setWhite(true);
 				} else if (row % 2 == 1 && col % 2 == 1){
-					board[row][col].setWhite(true);
+					boardArr[row][col].setWhite(true);
 				} //else
 				
 			} //col
@@ -134,6 +165,9 @@ public class Game extends Application {
 		//Puts pieces on the correct spaces
 		genPieces();
 		
+		//Makes board visual
+		genBoard();
+		
 	} //makeBoard
 	
 	/** 
@@ -141,9 +175,65 @@ public class Game extends Application {
 	 * This method puts the pieces on the correct spaces column by column. 
 	 */
 	private void genPieces() {
-		Board boardGen = new Board(board);
-		board = boardGen.genBoard();
+		Board boardGen = new Board(boardArr);
+		boardArr = boardGen.genBoard();
+		boardView = boardGen.getBoardView();
+		boardView[0][0].setOnMouseClicked(e-> {
+			checkClicks(0,0);
+		});
 	} //genPieces
 	
+	public void checkClicks(int x, int y) {
+		System.out.println("CLicked: " + x + ", " + y);
+		if (clicks[0] == -1 && clicks[1] == -1) {
+			clicks[0] = x;
+			clicks[1] = y;
+		} else if (clicks[2] != -1 && clicks[3] != -1) {
+			clicks[2] = x;
+			clicks[3] = y;
+		} else {
+			processMove();
+		}
+		
+	} //checkCLicks
+	
+	public void resetClicks() {
+		clicks[0] = -1;
+		clicks[1] = -1;
+		clicks[2] = -1;
+		clicks[3] = -1;
+	} //resetClicks
+	
+	public void processMove() {
+		
+		resetClicks();
+	} //processMove
+	
+	private void genBoard() {
+		
+		//tilePane
+		board.setMaxWidth(480);
+		board.setMinWidth(480);
+		Rectangle[][] bg = new Rectangle[8][8];
+		for(int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (boardView[i][j] != null) {
+					board.getChildren().addAll(boardView[i][j]);
+				}  //if
+				
+				if (boardArr[i][j].isWhite()) { //Board color white/black
+					bg[i][j] = new Rectangle(60, 60);
+					bg[i][j].setFill(Color.WHITE);
+					boardBg.getChildren().add(bg[i][j]);
+				} else {
+					bg[i][j] = new Rectangle(60, 60);
+					bg[i][j].setFill(Color.SLATEGRAY);
+					boardBg.getChildren().add(bg[i][j]);
+				} //if
+				
+			} //j
+		} //i
+		
+	} //genBoard
 	
 } //class
