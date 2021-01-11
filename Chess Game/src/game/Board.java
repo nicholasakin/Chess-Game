@@ -142,16 +142,22 @@ public class Board {
 			System.out.println("FILE NOT FOUND - IMAGE");
 		} //catch
 		
-		//fills spots in image view with empty ImageViews
+		// fills spots in image view with empty ImageViews
 		for (int row = 2; row < 6; row++) {
 			for (int col = 0; col < 8; col++) {
-				Rectangle rect = new Rectangle(60,60);
-				ImageView iv = new ImageView();
-				iv.setFitHeight(60);
-				iv.setFitWidth(60);
-				boardView[row][col] = iv;
-			} //col
-		} //row
+				//creates a transparent image
+				try {
+					ImageView iv = new ImageView(new Image(new FileInputStream("C:util\\white_pawn.png")));
+					iv.setOpacity(0.0);
+					iv.setFitHeight(60);
+					iv.setFitWidth(60);
+					boardView[row][col] = iv;
+				} catch (FileNotFoundException fne) {
+					System.out.println("FILE NOT FOUND");
+				} //catch
+				
+			} // col
+		} // row
 
 		return board;
 
@@ -166,18 +172,6 @@ public class Board {
 		return boardView;
 	} // getBoardView
 
-	/**
-	 * This method is responsible for creating the black and white checker pattern
-	 * of the board.
-	 * 
-	 * @return rectangle array containing correct colors
-	 */
-	public Rectangle[][] getBoardBackground() {
-		Rectangle[][] bg = new Rectangle[8][8];
-		for (int i = 0; i < 8; i++) {
 
-		} // i
-		return bg;
-	} // getBoardBackground
 
 } // board

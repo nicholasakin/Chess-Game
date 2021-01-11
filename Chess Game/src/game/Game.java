@@ -168,6 +168,9 @@ public class Game extends Application {
 		//Makes board visual
 		genBoard();
 		
+		//allows the board to be clickable
+		setUpClicks();
+		
 	} //makeBoard
 	
 	/** 
@@ -178,12 +181,15 @@ public class Game extends Application {
 		Board boardGen = new Board(boardArr);
 		boardArr = boardGen.genBoard();
 		boardView = boardGen.getBoardView();
-		boardView[0][0].setOnMouseClicked(e-> {
-			checkClicks(0,0);
-		});
 	} //genPieces
 	
+	public void setUpClicks() {
+		boardView = ProcessClicks.setUpClicks(boardView);
+	} //setUpClicks
+	
 	public void checkClicks(int x, int y) {
+		//fills clicks array with coordinate of first/second click if empty
+		//if first and second click have been inputted, move is processed
 		System.out.println("CLicked: " + x + ", " + y);
 		if (clicks[0] == -1 && clicks[1] == -1) {
 			clicks[0] = x;
@@ -193,7 +199,8 @@ public class Game extends Application {
 			clicks[3] = y;
 		} else {
 			processMove();
-		}
+			resetClicks();
+		} //else
 		
 	} //checkCLicks
 	
@@ -206,7 +213,7 @@ public class Game extends Application {
 	
 	public void processMove() {
 		
-		resetClicks();
+		
 	} //processMove
 	
 	private void genBoard() {
@@ -229,11 +236,12 @@ public class Game extends Application {
 					bg[i][j] = new Rectangle(60, 60);
 					bg[i][j].setFill(Color.SLATEGRAY);
 					boardBg.getChildren().add(bg[i][j]);
-				} //if
-				
+				} //if				
 			} //j
 		} //i
 		
 	} //genBoard
+	
+	
 	
 } //class
